@@ -67,6 +67,18 @@ class ProvideSpec extends FunSpec with Matchers {
       """.stripMargin shouldNot compile
     }
 
+    it("should compile for methods with parameterised methods with the wrong type") {
+      """
+        |  trait A {
+        |    def lo[X](yo: Seq[X]): X
+        |  }
+        |
+        |  trait B extends A {
+        |    @provide def lo[X](x: List[X]) = x.head
+        |  }
+      """.stripMargin shouldNot compile
+    }
+
     it("should compile if prefixing a def with args") {
       """
         |trait A {
@@ -145,6 +157,18 @@ class ProvideSpec extends FunSpec with Matchers {
         |    @provide def lo(x: Seq[Int]) = x.head.toString
         |  }
         |
+      """.stripMargin should compile
+    }
+
+    it("should compile for methods with parameterised methods") {
+      """
+        |  trait A {
+        |    def lo[X](yo: Seq[X]): X
+        |  }
+        |
+        |  trait B extends A {
+        |    @provide def lo[X](x: Seq[X]) = x.head
+        |  }
       """.stripMargin should compile
     }
 

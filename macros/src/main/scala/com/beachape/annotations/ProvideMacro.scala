@@ -49,11 +49,9 @@ object ProvideMacro {
       case DefDef(_, _, typeParamss, vParamss, _, rhs) => {
         val inputTypees = vParamss.map { paramList =>
           val l1 = paramList.map {
-            case ValDef(_, _, Ident(s), _) => (s, Nil)
-            case p @ ValDef(_, _, tpt, _) => {
-              val typeApply = TypeApply(Select(Literal(Constant(null)), TermName("asInstanceOf")), List(tpt))
-              val typeTreeTpe = c.typecheck(typeApply).tpe
-              (typeTreeTpe.typeSymbol.name, typeTreeTpe.typeParams.map(_.name))
+            case ValDef(_, _, Ident(s), _) => s
+            case p @ ValDef(_, _, tpt @ AppliedTypeTree(Ident(s), _), _) => {
+              s
             }
           }
           l1
@@ -65,7 +63,8 @@ object ProvideMacro {
       val memberParamListTypess = member.typeSignature.paramLists.map { paramList =>
         val l2 = paramList.map { p =>
           val pInfo = p.info
-          (p.info.typeSymbol.name, p.info.typeParams.map(_.name))
+          val n = p.info.typeSymbol.name
+          n
         }
         l2
       }
