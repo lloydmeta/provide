@@ -67,9 +67,8 @@ object ProvideMacro {
       val memberTypeNameToInputTypeParams = memberTypeParams.zip(inputTypeParams).toMap
       val memberParamListTypess = member.typeSignature.paramLists.map { paramList =>
         val l2 = paramList.map { p =>
-          val pInfo = p.info
           val n = p.info.typeSymbol.name
-          memberTypeNameToInputTypeParams.get(n).getOrElse(n)
+          memberTypeNameToInputTypeParams.getOrElse(n, n)
         }
         l2
       }
