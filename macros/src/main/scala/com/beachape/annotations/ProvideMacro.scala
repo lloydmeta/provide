@@ -48,14 +48,26 @@ object ProvideMacro {
       case ValDef(_, _, tpt, rhs) => Nil
       case DefDef(_, _, typeParamss, vParamss, _, rhs) => {
         val inputTypees = vParamss.map { paramList =>
-          paramList.map { case ValDef(_, _, Ident(s), _) => s }
+          val l1 = paramList.map {
+            case ValDef(_, _, Ident(s), _) => (s, Nil)
+            case p @ ValDef(_, _, tpt, _) => {
+              val typeApply = TypeApply(Select(Literal(Constant(null)), TermName("asInstanceOf")), List(tpt))
+              val typeTreeTpe = c.typecheck(typeApply).tpe
+              (typeTreeTpe.typeSymbol.name, typeTreeTpe.typeParams.map(_.name))
+            }
+          }
+          l1
         }
         inputTypees
       }
     }
     tree.tpe.members.filter(_.name == valOrDef.name).find { member =>
       val memberParamListTypess = member.typeSignature.paramLists.map { paramList =>
-        paramList.map { p => p.info.typeSymbol.name }
+        val l2 = paramList.map { p =>
+          val pInfo = p.info
+          (p.info.typeSymbol.name, p.info.typeParams.map(_.name))
+        }
+        l2
       }
       val paramListsTypesMatch = valOrDefInputTypess == memberParamListTypess
       member.isMethod && paramListsTypesMatch

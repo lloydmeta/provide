@@ -54,6 +54,19 @@ class ProvideSpec extends FunSpec with Matchers {
       """.stripMargin shouldNot compile
     }
 
+    it("should not compile if the generic params are of the wrong type") {
+      """
+        |
+        |trait A {
+        |  def lo(yo: Seq[Int]): String
+        |}
+        |
+        |trait B extends A {
+        |  @provide def lo(x: List[String]) = x.head.toString
+        |}
+      """.stripMargin shouldNot compile
+    }
+
     it("should compile if prefixing a def with args") {
       """
         |trait A {
@@ -118,6 +131,20 @@ class ProvideSpec extends FunSpec with Matchers {
         |trait B extends A {
         |  @provide def lo(x: Yolo) = x.lo
         |}
+      """.stripMargin should compile
+    }
+
+    it("should compile for methods with generic params") {
+      """
+        |
+        |  trait A {
+        |    def lo(yo: Seq[Int]): String
+        |  }
+        |
+        |  trait B extends A {
+        |    @provide def lo(x: Seq[Int]) = x.head.toString
+        |  }
+        |
       """.stripMargin should compile
     }
 
