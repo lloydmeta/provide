@@ -44,24 +44,7 @@ object ProvideMacro {
   private def matchingSymbol(c: blackbox.Context)(valOrDef: c.universe.ValOrDefDef, unsafeTree: c.universe.Tree): c.universe.Symbol = {
     import c.universe._
     val tree = toTreeWithTpe(c)(unsafeTree)
-    val (inputTypeParams, valOrDefInputTypess) = valOrDef match {
-      case ValDef(_, _, tpt, rhs) => (Nil, Nil)
-      case DefDef(_, _, typeParamss, vParamss, _, rhs) => {
-        val typeParamNames = typeParamss.map {
-          case TypeDef(_, name, _, _) => name.toTypeName
-        }
-        val inputTypees = vParamss.map { paramList =>
-          val l1 = paramList.map {
-            case ValDef(_, _, Ident(s), _) => s
-            case p @ ValDef(_, _, tpt @ AppliedTypeTree(Ident(s), _), _) => {
-              s
-            }
-          }
-          l1
-        }
-        (typeParamNames, inputTypees)
-      }
-    }
+    val (inputTypeParams, valOrDefInputTypess) = inputTypeParamsWithInputTypes(c)(valOrDef)
     tree.tpe.members.filter(_.name == valOrDef.name).find { member =>
       val memberTypeParams = member.typeSignature.typeParams.map(_.name)
       val memberTypeNameToInputTypeParams = memberTypeParams.zip(inputTypeParams).toMap
@@ -75,6 +58,24 @@ object ProvideMacro {
       val paramListsTypesMatch = valOrDefInputTypess == memberParamListTypess
       member.isMethod && paramListsTypesMatch
     } getOrElse NoSymbol
+  }
+
+  private def inputTypeParamsWithInputTypes(c: blackbox.Context)(valOrDef: c.universe.ValOrDefDef): (List[c.universe.TypeName], List[List[c.universe.Name]]) = {
+    import c.universe._
+    valOrDef match {
+      case ValDef(_, _, _, _) => (Nil, Nil)
+      case DefDef(_, _, typeParamss, vParamss, _, rhs) => {
+        val typeParamNames = typeParamss.map(_.name.toTypeName)
+        val inputTypees = vParamss.map { paramList =>
+          val l1 = paramList.map {
+            case ValDef(_, _, Ident(s), _) => s
+            case ValDef(_, _, tpt @ AppliedTypeTree(Ident(s), _), _) => s
+          }
+          l1
+        }
+        (typeParamNames, inputTypees)
+      }
+    }
   }
 
   private def toTreeWithTpe(c: blackbox.Context)(unsafeTree: c.universe.Tree): c.universe.Tree = {
