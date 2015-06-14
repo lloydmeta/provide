@@ -185,6 +185,20 @@ class ProvideSpec extends FunSpec with Matchers {
       """.stripMargin should compile
     }
 
+    it("should work with multiple param lists") {
+      """
+        |
+        |  trait A {
+        |    def lo[X, Y, Z](yo: Seq[X], thing: Int, arg: Seq[Y])(another: Z): X
+        |  }
+        |
+        |  trait B extends A {
+        |    @provide def lo[X, Y, Z](x: Seq[X], y: Int, blah: Seq[Y])(what: Z) = x.head
+        |  }
+        |
+      """.stripMargin should compile
+    }
+
   }
 
 }
