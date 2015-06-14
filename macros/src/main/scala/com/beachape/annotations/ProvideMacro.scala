@@ -44,9 +44,12 @@ object ProvideMacro {
   private def matchingSymbol(c: blackbox.Context)(valOrDef: c.universe.ValOrDefDef, unsafeTree: c.universe.Tree): c.universe.Symbol = {
     import c.universe._
     val tree = toTreeWithTpe(c)(unsafeTree)
-    val valOrDefInputTypess = valOrDef match {
-      case ValDef(_, _, tpt, rhs) => Nil
+    val (inputTypeParams, valOrDefInputTypess) = valOrDef match {
+      case ValDef(_, _, tpt, rhs) => (Nil, Nil)
       case DefDef(_, _, typeParamss, vParamss, _, rhs) => {
+        val typeParamNames = typeParamss.map {
+          case TypeDef(_, name, _, _) => name.toTypeName
+        }
         val inputTypees = vParamss.map { paramList =>
           val l1 = paramList.map {
             case ValDef(_, _, Ident(s), _) => s
@@ -56,15 +59,17 @@ object ProvideMacro {
           }
           l1
         }
-        inputTypees
+        (typeParamNames, inputTypees)
       }
     }
     tree.tpe.members.filter(_.name == valOrDef.name).find { member =>
+      val memberTypeParams = member.typeSignature.typeParams.map(_.name)
+      val memberTypeNameToInputTypeParams = memberTypeParams.zip(inputTypeParams).toMap
       val memberParamListTypess = member.typeSignature.paramLists.map { paramList =>
         val l2 = paramList.map { p =>
           val pInfo = p.info
           val n = p.info.typeSymbol.name
-          n
+          memberTypeNameToInputTypeParams.get(n).getOrElse(n)
         }
         l2
       }

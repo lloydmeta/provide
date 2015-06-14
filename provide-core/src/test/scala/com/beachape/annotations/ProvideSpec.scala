@@ -193,7 +193,7 @@ class ProvideSpec extends FunSpec with Matchers {
         |  }
         |
         |  trait B extends A {
-        |    @provide def lo[X, Y, Z](x: Seq[X], y: Int, blah: Seq[Y])(what: Z) = x.head
+        |    @provide def lo[X, Y, N](x: Seq[X], y: Int, blah: Seq[Y])(what: N) = x.head
         |  }
         |
       """.stripMargin should compile
