@@ -1,4 +1,4 @@
-# @Provide Scala annotation
+# @Provide Scala annotation [![Build Status](https://travis-ci.org/lloydmeta/provide.svg?branch=master)](https://travis-ci.org/lloydmeta/provide) 
  
 Have you ever wanted to make sure that your code implements a method in a parent class/trait but thought that 
 [`override` as too dangerous/wrong](http://stackoverflow.com/questions/5643144/using-the-override-keyword-on-implementations-of-abstract-methods)?
