@@ -44,24 +44,21 @@ object ProvideMacro {
   private def matchingSymbol(c: blackbox.Context)(valOrDef: c.universe.ValOrDefDef, unsafeTree: c.universe.Tree): c.universe.Symbol = {
     import c.universe._
     val tree = toTreeWithTpe(c)(unsafeTree)
-    val valOrDefRhsTpe = c.typecheck(valOrDef.rhs).tpe
-    val (valOrDefInputTypess, valOrDefOutputType) = valOrDef match {
-      case ValDef(_, _, tpt, rhs) => (Nil, c.typecheck(rhs).tpe.finalResultType)
+    val valOrDefInputTypess = valOrDef match {
+      case ValDef(_, _, tpt, rhs) => Nil
       case DefDef(_, _, typeParamss, vParamss, _, rhs) => {
         val inputTypees = vParamss.map { paramList =>
           paramList.map { case ValDef(_, _, Ident(s), _) => s }
         }
-        (inputTypees, c.typecheck(rhs).tpe.finalResultType)
+        inputTypees
       }
     }
     tree.tpe.members.filter(_.name == valOrDef.name).find { member =>
-      val memberResultTypeMatch = valOrDefOutputType.<:<(member.typeSignature.finalResultType)
-      val typeParamsMatch = valOrDefRhsTpe.typeParams == member.typeSignature.typeParams
       val memberParamListTypess = member.typeSignature.paramLists.map { paramList =>
         paramList.map { p => p.info.typeSymbol.name }
       }
       val paramListsTypesMatch = valOrDefInputTypess == memberParamListTypess
-      member.isMethod && memberResultTypeMatch && typeParamsMatch && paramListsTypesMatch
+      member.isMethod && paramListsTypesMatch
     } getOrElse NoSymbol
   }
 

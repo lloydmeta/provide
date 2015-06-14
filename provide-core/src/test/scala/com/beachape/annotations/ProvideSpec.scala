@@ -107,6 +107,20 @@ class ProvideSpec extends FunSpec with Matchers {
       """.stripMargin should compile
     }
 
+    it("should compile in a moderately complex case ") {
+      """
+        |case class Yolo(lo: String)
+        |
+        |trait A {
+        |  def lo(yo: Yolo): String
+        |}
+        |
+        |trait B extends A {
+        |  @provide def lo(x: Yolo) = x.lo
+        |}
+      """.stripMargin should compile
+    }
+
   }
 
 }
