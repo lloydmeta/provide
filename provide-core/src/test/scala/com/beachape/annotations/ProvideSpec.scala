@@ -79,6 +79,22 @@ class ProvideSpec extends FunSpec with Matchers {
       """.stripMargin shouldNot compile
     }
 
+    it("should not compile for methods with implicit param lists with the wrong type compared with a parent method") {
+      """
+        |  case class TaxRate(i: BigDecimal)
+        |  case class DiscountRate(i: BigDecimal)
+        |
+        |  trait A {
+        |    def totalPrice(p: BigDecimal)(implicit taxRate: TaxRate): BigDecimal
+        |  }
+        |
+        |  class B extends A {
+        |    @provide def totalPrice(n: BigDecimal)(implicit r: DiscountRate): BigDecimal = BigDecimal(3)
+        |  }
+        |
+      """.stripMargin shouldNot compile
+    }
+
     it("should compile if prefixing a def with args") {
       """
         |trait A {
@@ -196,6 +212,20 @@ class ProvideSpec extends FunSpec with Matchers {
         |    @provide def lo[X, Y, N](x: Seq[X], y: Int, blah: Seq[Y])(what: N) = x.head
         |  }
         |
+      """.stripMargin should compile
+    }
+
+    it("should work with implicit params") {
+      """
+        |  case class TaxRate(i: BigDecimal)
+        |
+        |  trait A {
+        |    def totalPrice(p: BigDecimal)(implicit taxRate: TaxRate): BigDecimal
+        |  }
+        |
+        |  class B extends A {
+        |    @provide def totalPrice(n: BigDecimal)(implicit r: TaxRate): BigDecimal = BigDecimal(3)
+        |  }
       """.stripMargin should compile
     }
 
