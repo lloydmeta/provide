@@ -172,6 +172,19 @@ class ProvideSpec extends FunSpec with Matchers {
       """.stripMargin should compile
     }
 
+    it("should compile for methods with a mix of parameterised and normal params") {
+      """
+        |  trait A {
+        |    def lo[X, Y](yo: Seq[X], thing: Int, arg: Seq[Y]): X
+        |  }
+        |
+        |  trait B extends A {
+        |    @provide def lo[Y, Z](x: Seq[Y], y: Int, blah: Seq[Z]) = x.head
+        |  }
+        |
+      """.stripMargin should compile
+    }
+
   }
 
 }
