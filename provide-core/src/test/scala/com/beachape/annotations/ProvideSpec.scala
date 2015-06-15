@@ -11,47 +11,47 @@ class ProvideSpec extends FunSpec with Matchers {
 
     it("should not compile if there is no super trait with an abstract trait") {
       """
-          |class Test {
-          |  @provide def i = 3
-          |}
-        """.stripMargin shouldNot compile
-    }
-
-    it("should not compile if prefixing a method that is itself abstract") {
-      """
-        |trait A {
-        |    def i: Int
-        |  }
-        |
-        |  trait B extends A {
-        |    @provide def i: Int
-        |  }
-        |
-      """.stripMargin shouldNot compile
-    }
-
-    it("should not compile if prefixing a method with the same name but different input type sig") {
-      """
-        |trait A {
-        |  def i(x: Int): Int
-        |}
-        |
-        |class Test extends A {
-        |  def i(y: Int) =  4
+        |class Test {
         |  @provide def i = 3
         |}
       """.stripMargin shouldNot compile
     }
 
+    it("should not compile if prefixing a method that is itself abstract") {
+      """
+      |trait A {
+      |  def i: Int
+      |}
+      |
+      |trait B extends A {
+      |  @provide def i: Int
+      |}
+      |
+      """.stripMargin shouldNot compile
+    }
+
+    it("should not compile if prefixing a method with the same name but different input type sig") {
+      """
+      |trait A {
+      |  def i(x: Int): Int
+      |}
+      |
+      |class Test extends A {
+      |  def i(y: Int) =  4
+      |  @provide def i = 3
+      |}
+      """.stripMargin shouldNot compile
+    }
+
     it("should not compile if prefixing a method with the same name but a different return sig") {
       """
-        |trait A {
-        |  def i(x: Int): Int
-        |}
-        |
-        |class Test extends A {
-        |  @provide def i(y: Int) = "hello"
-        |}
+      |trait A {
+      |  def i(x: Int): Int
+      |}
+      |
+      |class Test extends A {
+      |  @provide def i(y: Int) = "hello"
+      |}
       """.stripMargin shouldNot compile
     }
 
@@ -80,7 +80,7 @@ class ProvideSpec extends FunSpec with Matchers {
       """.stripMargin shouldNot compile
     }
 
-    it("should compile for methods with parameterised methods with the wrong type") {
+    it("should not compile for methods with parameterised methods with the wrong type") {
       """
         |  trait A {
         |    def lo[X](yo: Seq[X]): X
@@ -122,14 +122,14 @@ class ProvideSpec extends FunSpec with Matchers {
 
     it("should compile if prefixing a def with no args") {
       """
-          |trait A {
-          |  def i: Int
-          |}
-          |
-          |class Test extends A {
-          |  @provide def i = 3
-          |}
-        """.stripMargin should compile
+        |trait A {
+        |  def i: Int
+        |}
+        |
+        |class Test extends A {
+        |  @provide def i = 3
+        |}
+      """.stripMargin should compile
     }
 
     it("should compile if prefixing a val that implements a parent method") {
@@ -151,12 +151,12 @@ class ProvideSpec extends FunSpec with Matchers {
         |}
         |
         |trait B {
-        |  def j: String
+        |  def j(l: Long): String
         |}
         |
         |trait Boom extends A with B {
         |  @provide val i = 3
-        |  @provide val j = "boom"
+        |  @provide def j(x: Long) = "boom"
         |}
       """.stripMargin should compile
     }
@@ -196,7 +196,7 @@ class ProvideSpec extends FunSpec with Matchers {
         |  }
         |
         |  trait B extends A {
-        |    @provide def lo[X](x: Seq[X]) = x.head
+        |    @provide def lo[N](x: Seq[N]) = x.head
         |  }
       """.stripMargin should compile
     }
@@ -239,6 +239,19 @@ class ProvideSpec extends FunSpec with Matchers {
         |  class B extends A {
         |    @provide def totalPrice(n: BigDecimal)(implicit r: TaxRate): BigDecimal = BigDecimal(3)
         |  }
+      """.stripMargin should compile
+    }
+
+    it("should work with functional params") {
+      """
+        |
+        |trait Hello {
+        |  def a(f: Int => String): String
+        |}
+        |
+        |class HelloImp extends Hello {
+        |  @provide def a(func: Int => String) = func(3)
+        |}
       """.stripMargin should compile
     }
 

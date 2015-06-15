@@ -36,6 +36,15 @@ class Test extends A {
   @provide def i = 3
 }
 
+// The following will fail because you aren't providing any implementation for the method you claim to be providing
+trait A {
+  def i: Int
+}
+
+trait B extends A {
+  @provide def i: Int
+}
+
 /* 
   The following silliness will also fail, because you are saying you are providing an implementation, but you
   are actually overriding an existing method. This could result in serious runtime errors, so this lib helps

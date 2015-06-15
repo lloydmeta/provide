@@ -105,7 +105,7 @@ object ProvideBuild extends Build {
   }
 
   lazy val scoverageSettings = Seq(
-    coverageExcludedPackages := """com\.beachape\.annotations\.ProvideMacros""",
+    coverageExcludedPackages := """com\.beachape\.annotations\.ProvideMacro""",
     coverageHighlighting := true
   )
 
