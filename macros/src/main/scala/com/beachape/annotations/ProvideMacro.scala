@@ -23,7 +23,7 @@ object ProvideMacro {
   }
 
   private def checkedOrAbort(c: blackbox.Context)(valOrDef: c.universe.ValOrDefDef): c.Expr[Any] = {
-    if (valOrDef.symbol.isAbstract) {
+    if (isAbstract(c)(valOrDef)) {
       c.abort(c.enclosingPosition, "Method itself is abstract.")
     }
     val ancestorMethods = allAncestorDeclarations(c)(valOrDef)
@@ -75,6 +75,15 @@ object ProvideMacro {
         }
         (typeParamNames, inputTypees)
       }
+    }
+  }
+
+  // valOrDef.symbol.isAbstract does not work, so we have to roll our own by checking the tree
+  private def isAbstract(c: blackbox.Context)(valOrDef: c.universe.ValOrDefDef): Boolean = {
+    import c.universe._
+    valOrDef match {
+      case ValDef(_, _, _, rhs) => rhs.isEmpty
+      case DefDef(_, _, _, _, _, rhs) => rhs.isEmpty
     }
   }
 

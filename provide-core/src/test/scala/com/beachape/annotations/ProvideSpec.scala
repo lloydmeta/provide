@@ -17,6 +17,19 @@ class ProvideSpec extends FunSpec with Matchers {
         """.stripMargin shouldNot compile
     }
 
+    it("should not compile if prefixing a method that is itself abstract") {
+      """
+        |trait A {
+        |    def i: Int
+        |  }
+        |
+        |  trait B extends A {
+        |    @provide def i: Int
+        |  }
+        |
+      """.stripMargin shouldNot compile
+    }
+
     it("should not compile if prefixing a method with the same name but different input type sig") {
       """
         |trait A {
