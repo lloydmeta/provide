@@ -255,6 +255,24 @@ class ProvideSpec extends FunSpec with Matchers {
       """.stripMargin should compile
     }
 
+    it("should still compile with case class parameter implementation") {
+      """
+        |trait A {
+        |  def i: Int
+        |}
+        |
+        |case class AImp(@provide i: Int) extends A
+      """.stripMargin should compile
+    }
+
+    it("should work with Java parent classes") {
+      """
+        |class RunningMan extends Runnable {
+        |  @provide def run(): Unit = println("wut")
+        |}
+      """.stripMargin should compile
+    }
+
   }
 
 }

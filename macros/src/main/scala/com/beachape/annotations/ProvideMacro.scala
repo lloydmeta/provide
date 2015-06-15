@@ -16,12 +16,17 @@ object ProvideMacro {
 
     annottees.map(_.tree) match {
       case (v @ ValDef(m @ Modifiers(fSet, modeName, annotations), name, tpt, rhs)) :: (cdef @ ClassDef(cdMods, cdName, cdTypeDefs, Template(parents, cdSelf, body))) :: xs => {
+        /*
+          For some reason, parents from the 2nd element aren't available yet / can't be found.
+          In the meantime, disable the macro check and spit out a warn if used in a constructor..
+         */
         c.warning(
           c.enclosingPosition,
           """
             |Looks like you're trying to use @provide with a (case) class constructor param, which is not yet supported.
             |The annotation will be skipped.
-          """.stripMargin)
+          """.stripMargin
+        )
         c.Expr[Any](cdef)
       }
       case (d: ValOrDefDef) :: xs => checkedOrAbort(c)(d, None)
@@ -79,7 +84,7 @@ object ProvideMacro {
             case ValDef(_, _, tpt @ AppliedTypeTree(Ident(s), _), _) => s
             case ValDef(_, _, tpt, _) => {
               val typeTree = Typed(Ident(TermName("$qmark$qmark$qmark")), tpt)
-              c.typecheck(q"??? : $tpt").tpe.typeSymbol.name
+              c.typecheck(typeTree).tpe.typeSymbol.name
             }
           }
           l1
